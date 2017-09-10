@@ -67,6 +67,10 @@ public class Category {
 		return amount;
 	}
 
+	public Account getAccount() {
+		return this.account;
+	}
+
 	public void deleteCategory() {
 		categoryMap.remove(this);
 		categoryList.remove(this);
