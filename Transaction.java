@@ -43,6 +43,12 @@ public class Transaction {
 		this.category.getAccount().deposit(this.amount);
 	}
 
+	public void setCategory(Category newCategory) {
+		this.unapply();
+		this.category = newCategory;
+		this.apply();
+	}
+	
 	public void addCategory(Category category) {
 		this.category = category;
 		category.owned.add(this);
