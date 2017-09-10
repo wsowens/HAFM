@@ -6,31 +6,33 @@ import java.io.FileNotFoundException;
 
 public class Main {
 	public static DecimalFormat df = new DecimalFormat("###.##");
-	
+
 	public static void main(String[] args) {
 		Scanner input = new Scanner(System.in);
 		System.out.println("=====Welcome to the #Adulting Finance Manager v. 1.1=====\n");
-	
+
 		boolean importIncomplete = true;
 		while (importIncomplete) {
-			System.out.println("Please enter a filename to open a file. (Type [new] for new file.)");
+			System.out.println("Please enter a filename to open a file. (Type \'new\' for new file.)");
 			String userInput = input.nextLine();
-			if (userInput.equals("[new]")) {
+			if (userInput.equals("new")) {
 				System.out.println("Creating new file.");
 				break;
 			}
+
 			try {
 				File importFile = new File(userInput);
 				Scanner fileInput = new Scanner(importFile);
 				fileInput.close();
 				importIncomplete = false;
 			}
+
 			catch (FileNotFoundException ex) {
 				System.out.println("Error. File cannot be found. Please try again.");
 				importIncomplete = true;
 				continue;
 			}
-			
+
 			if (Data.read(userInput)) {
 				System.out.println("Data read successful.");
 				importIncomplete = false;
@@ -40,38 +42,40 @@ public class Main {
 				importIncomplete = true;
 			}
 		}
-		
-		
+
+
 		System.out.println("\nWelcome! You currently have a net worth of: ");
 		System.out.println("$" + df.format(Account.getTotal()));
-		
-		
-		
-		
-		
+
+
+
+
+
 		System.out.println("\nWhat would you like to do?");
-		
+
 		boolean mainMenuLoop = true;
 		boolean genMenuLoop = true;
 		boolean subMenuLoop = true;
-		
+
 		int index = 0;
-		
+
 		while (mainMenuLoop) {
 			genMenuLoop = true;
 			switch (Menu.mainMenu(input)) {
-			case 1:  
+			//Accounts selected
+			case 1:
 				while (genMenuLoop) {
 					subMenuLoop = true;
 					Account.printAll();
 					switch (Menu.accountMenu(input)) {
+					//create new account selected
 					case 1:
 						input.nextLine();
 						System.out.println("Name:");
 						String name = input.nextLine();
 						System.out.println("Amount:");
-						double balance = input.nextDouble();
-						input.nextLine();
+						double balance
+							= Menu.getValidDouble(input);
 						try {
 							new Account(name, balance);
 						}
@@ -79,16 +83,18 @@ public class Main {
 							System.out.println("User input error. Account not created.");
 						}
 						break;
-					case 2: 
+					// Withdraw selected
+					case 2:
 						input.nextLine();
 						System.out.println("Select the number of an account to withdraw from.");
-						index = input.nextInt() - 1;
+						//potential infinite loop if accountList.size() == 0, fix later
+						index = Menu.getValidInt(input, 1, Account.accountList.size()) - 1;
 						System.out.println((Account.accountList.get(index)));
 						System.out.println("Enter an amount to withdraw.");
-						double amount = input.nextDouble();
-						System.out.println("Withdraw $" + amount + " from " + Account.accountList.get(index).name + "? (Enter 'y' if yes.)");
-						input.nextLine();
-						if (input.nextLine().equals("y")) {
+						double amount
+							= Menu.getValidDouble(input);
+						if (Menu.getConfirmation(input, "Withdraw $" + amount
+							+ " from " + Account.accountList.get(index).name + "?")) {
 							if (Account.accountList.get(index).withdraw(amount)) {
 								System.out.println("Withdraw successful.");
 							}
@@ -100,16 +106,18 @@ public class Main {
 							System.out.println("Withdraw cancelled.");
 						}
 						break;
+					//withdraw
 					case 3:
 						input.nextLine();
 						System.out.println("Select the number of an account to deposit into.");
-						index = input.nextInt() - 1;
+						//potential infinite loop if accountList.size() == 0, fix later
+						index = Menu.getValidInt(input, 1, Account.accountList.size()) - 1;
 						System.out.println((Account.accountList.get(index)));
 						System.out.println("Enter an amount to deposit.");
-						amount = input.nextDouble();
-						System.out.println("Deposit $" + amount + " into " + Account.accountList.get(index).name + "? (Enter 'y' if yes.)");
-						input.nextLine();
-						if (input.nextLine().equals("y")) {
+						amount
+							= Menu.getValidDouble(input);
+						if (Menu.getConfirmation(input, "Deposit $" + amount
+							+ " into " + Account.accountList.get(index).name + "?")) {
 							if (Account.accountList.get(index).deposit(amount)) {
 								System.out.println("Deposit successful.");
 							}
@@ -121,19 +129,23 @@ public class Main {
 							System.out.println("Deposit cancelled.");
 						}
 						break;
+					//transfer
 					case 4:
 						input.nextLine();
 						System.out.println("Select the number of an account to withdraw from.");
-						Account withdrawAccount = Account.accountList.get(input.nextInt() - 1);
+						//potential infinite loop if accountList.size() == 0, fix later
+						index = Menu.getValidInt(input, 1, Account.accountList.size()) - 1;
+						Account withdrawAccount = Account.accountList.get(index);
+						//potential infinite loop if accountList.size() == 0, fix later
 						System.out.println("Select the number of an account to deposit into.");
-						Account depositAccount = Account.accountList.get(input.nextInt() -1);
+						index = Menu.getValidInt(input, 1, Account.accountList.size()) - 1;
+						Account depositAccount = Account.accountList.get(index);
 						System.out.println(withdrawAccount);
 						System.out.println(depositAccount);
 						System.out.println("Enter an amount to transfer.");
-						amount = input.nextDouble();
-						System.out.println("Transfer $" + amount + " from " + withdrawAccount.name + " into " + depositAccount.name + "? (Enter 'y' if yes.)");
-						input.nextLine();
-						if (input.nextLine().equals("y")) {
+						amount = Menu.getValidDouble(input);
+						if (Menu.getConfirmation(input, "Transfer $" + amount + " from "
+							+ withdrawAccount.name + " into " + depositAccount.name + "?")) {
 							if (withdrawAccount.transfer(amount, depositAccount)) {
 								System.out.println("Transfer successful.");
 							}
@@ -148,11 +160,10 @@ public class Main {
 					case 5:
 						input.nextLine();
 						System.out.println("Select the number of an account to delete.");
-						index = input.nextInt() - 1;
+						//potential infinite loop if accountList.size() == 0, fix later
+						index = Menu.getValidInt(input, 1, Account.accountList.size()) - 1;
 						System.out.println((Account.accountList.get(index)));
-						System.out.println("Are you sure you want to quit? (Enter 'y' if yes.)");
-						input.nextLine();
-						if (input.nextLine().equals("y")) {
+						if (Menu.getConfirmation(input, "Are you sure you want to delete this account?")) {
 							Account.accountList.get(index).deleteAccount();
 							System.out.println("Account deleted.");
 						}
@@ -162,7 +173,7 @@ public class Main {
 					case 6:
 						genMenuLoop = false;
 					}
-					
+
 				}
 				break;
 			case 2:
@@ -170,15 +181,31 @@ public class Main {
 					subMenuLoop = true;
 					Category.printAll();
 					switch (Menu.genMenu(input, "category")) {
+					//creating new category
 					case 1:
 						input.nextLine();
 						System.out.println("Name:");
 						String name = input.nextLine();
 						System.out.println("Amount:");
-						double amount = input.nextDouble();
-						input.nextLine();
+						double amount = Menu.getValidDouble(input);
 						System.out.println("Account:");
-						Account account = Account.accountMap.get(input.nextLine());
+						//make a safer way of accessing this
+						Account account = null;
+						boolean invalidAccount = true;
+						while (invalidAccount) {
+							try {
+								invalidAccount = false;
+								account = Account.accountMap.get(input.nextLine());
+								if (account == null) {
+									System.out.println("Error. Account does not exist.");
+									invalidAccount = true;
+								}
+							}
+							catch (Exception ex) {
+								System.out.println("Error. Account does not exist.");
+								invalidAccount = true;
+							}
+						}
 						try {
 							new Category(name, amount, account);
 						}
@@ -186,10 +213,11 @@ public class Main {
 							System.out.println("User input error. Category not created.");
 						}
 						break;
-					case 2: 
+					case 2:
 						input.nextLine();
 						System.out.println("Select the number of a category to modify it.");
-						index = input.nextInt() - 1;
+						//potential infinite loop if categoryList.size() == 0, fix later
+						index = Menu.getValidInt(input, 1, Category.categoryList.size()) - 1;
 						Category newCategory = new Category(Category.categoryList.get(index));
 						while (subMenuLoop) {
 							System.out.println(newCategory);
@@ -219,18 +247,34 @@ public class Main {
 							case 2:
 								input.nextLine();
 								System.out.println("Enter new amount: ");
-								newCategory.setAmount(input.nextDouble());
+								newCategory.setAmount(Menu.getValidDouble(input));
 								break;
-							case 3: 
+							case 3:
 								input.nextLine();
 								System.out.println("Enter new account: ");
-								newCategory.account = Account.accountMap.get(input.nextLine());
+								Account newAccount = null;
+								invalidAccount = true;
+								while (invalidAccount) {
+									try {
+										invalidAccount = false;
+										newAccount = Account.accountMap.get(input.nextLine());
+										if (newAccount == null) {
+											System.out.println("Error. Account does not exist.");
+											invalidAccount = true;
+										}
+									}
+									catch (Exception ex) {
+										System.out.println("Error. Account does not exist.");
+										invalidAccount = true;
+									}
+								}
+								newCategory.account = newAccount;
 								break;
 							case 4:
 								newCategory.deleteCategory();
 								subMenuLoop = false;
 								break;
-							case 5: 
+							case 5:
 								try {
 									Category.categoryList.remove(newCategory);
 									Category.categoryList.get(index).updateCategory(newCategory);
@@ -242,17 +286,17 @@ public class Main {
 									System.out.println("User input error. Category not updated.");
 								}
 								subMenuLoop = false;
-								
+
 							}
 						}
 						break;
 					case 3:
 						input.nextLine();
 						System.out.println("Select the number of a category to delete it.");
-						index = input.nextInt() - 1;
+						//potential infinite loop if categoryList.size() == 0, fix later
+						index = Menu.getValidInt(input, 1, Category.categoryList.size()) - 1;
 						System.out.println(Category.categoryList.get(index));
-						System.out.println("Are you sure you want to delete this transaction? (Enter 'y' if yes.)");
-						if (input.next().equals("y")) {
+						if (Menu.getConfirmation(input, "Are you sure you want to delete this category?")) {
 							Category.categoryList.get(index).deleteCategory();
 							System.out.println("Category deleted.");
 						}
@@ -263,7 +307,7 @@ public class Main {
 					case 4:
 						genMenuLoop = false;
 					}
-					
+
 				}
 				break;
 			case 3:
@@ -276,12 +320,27 @@ public class Main {
 						System.out.println("Name:");
 						String name = input.nextLine();
 						System.out.println("Amount:");
-						double amount = input.nextDouble();
-						input.nextLine();
+						double amount = Menu.getValidDouble(input);
 						System.out.println("Date:");
-						String date = input.nextLine();
+						String date = Menu.getValid(input, Menu.dateFormat);
 						System.out.println("Category:");
-						Category category = Category.categoryMap.get(input.nextLine());
+						//make a safer way of doing this
+						Category category = null;
+						boolean invalidCategory = true;
+						while (invalidCategory) {
+							try {
+								invalidCategory = false;
+								category = Category.categoryMap.get(input.nextLine());
+								if (category == null) {
+									System.out.println("Error. Category does not exist.");
+									invalidCategory = true;
+								}
+							}
+							catch (Exception ex) {
+								System.out.println("Error. Category does not exist.");
+								invalidCategory = true;
+							}
+						}
 						System.out.println("Notes:");
 						String notes = input.nextLine();
 						try {
@@ -291,10 +350,10 @@ public class Main {
 							System.out.println("User input error. Transaction not created.");
 						}
 						break;
-					case 2: 
+					case 2:
 						input.nextLine();
 						System.out.println("Select the number of a transaction to modify it.");
-						index = input.nextInt() - 1;
+						index = Menu.getValidInt(input, 1, Transaction.transactionList.size()) -1;
 						Transaction newTransaction = new Transaction(Transaction.transactionList.get(index));
 						while (subMenuLoop) {
 							System.out.println(newTransaction);
@@ -315,17 +374,34 @@ public class Main {
 							case 2:
 								input.nextLine();
 								System.out.println("Enter new amount: ");
-								newTransaction.modifyAmount(input.nextDouble());
+								newTransaction.modifyAmount(Menu.getValidDouble(input));
 								break;
-							case 3: 
+							case 3:
 								input.nextLine();
 								System.out.println("Enter new date: ");
-								newTransaction.date = input.nextLine();
+								newTransaction.date = Menu.getValid(input, Menu.dateFormat);
 								break;
-							case 4: 
+							case 4:
 								input.nextLine();
 								System.out.println("Enter new category: ");
-								newTransaction.modifyCategory(Category.categoryMap.get(input.nextLine()));
+								//make a safer way of doing this
+								Category newCategory = null;
+								invalidCategory = true;
+								while (invalidCategory) {
+									try {
+										invalidCategory = false;
+										newCategory = Category.categoryMap.get(input.nextLine());
+										if (newCategory == null) {
+											System.out.println("Error. Category does not exist.");
+											invalidCategory = true;
+										}
+									}
+									catch (Exception ex) {
+										System.out.println("Error. Category does not exist.");
+										invalidCategory = true;
+									}
+								}
+								newTransaction.modifyCategory(newCategory);
 								break;
 							case 5:
 								input.nextLine();
@@ -336,8 +412,9 @@ public class Main {
 								newTransaction.deleteTransaction();
 								subMenuLoop = false;
 								break;
-							case 7: 
+							case 7:
 								try {
+									//this is clunky, fix it
 									Transaction.transactionList.remove(newTransaction);
 									Transaction.transactionList.get(index).deleteTransaction();
 									Transaction.transactionList.add(index, newTransaction);
@@ -347,17 +424,17 @@ public class Main {
 									System.out.println("User input error. Transaction not updated.");
 								}
 								subMenuLoop = false;
-								
+
 							}
 						}
 						break;
 					case 3:
 						input.nextLine();
 						System.out.println("Select the number of a transaction to delete it.");
-						index = input.nextInt() - 1;
+						//potential infinite loop, yada yada
+						index =  Menu.getValidInt(input, 1, Transaction.transactionList.size()) -1;
 						System.out.println(Transaction.transactionList.get(index));
-						System.out.println("Are you sure you want to delete this transaction? (Enter 'y' if yes.)");
-						if (input.next().equals("y")) {
+						if (Menu.getConfirmation(input, "Are you sure you want to delete this transaction?")) {
 							Transaction.transactionList.get(index).deleteTransaction();
 							System.out.println("Transaction deleted.");
 						}
@@ -368,7 +445,7 @@ public class Main {
 					case 4:
 						genMenuLoop = false;
 					}
-					
+
 				}
 				break;
 			case 4:
@@ -454,15 +531,15 @@ public class Main {
 					case 4:
 						genMenuLoop = false;
 					}
-				
+
 				}
 				break;
 			default:
 				System.out.println("Error: invalid input");
 			}
-		}	
+		}
 		System.out.println("Goodbye.");
 		input.close();
-		
+
 	}
 }
