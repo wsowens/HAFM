@@ -58,6 +58,13 @@ public class Category {
 		this.remaining = newAmount - diff;
 	}
 
+	public void setRemaining(double newRemaining) {
+		this.remaining = newRemaining;
+	}
+
+	public double getRemaining() {
+		return this.remaining;
+	}
 
 	public String getName() {
 		return name;

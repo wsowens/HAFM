@@ -34,12 +34,12 @@ public class Transaction {
 	}
 
 	public void apply() {
-		this.category.setAmount(this.category.getAmount() - this.amount);
+		this.category.setRemaining(category.getRemaining() - this.amount);
 		this.category.getAccount().withdraw(this.amount);
 	}
 
 	public void unapply() {
-		this.category.setAmount(this.category.getAmount() + this.amount);
+		this.category.setRemaining(category.getRemaining() - this.amount);
 		this.category.getAccount().deposit(this.amount);
 	}
 
