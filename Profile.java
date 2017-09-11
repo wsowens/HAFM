@@ -119,6 +119,12 @@ public class Profile {
         return success;
     }
 
+    public boolean removeTransaction(Transaction toDelete) {
+        if (transactionList.contains(toDelete)) {
+            return false;
+        }
+        return removeTransaction(transactionList.indexOf(toDelete));
+    }
     //possible make this void
     public boolean removeTransaction(int index) {
         dprint("Removing transaction:\n");
@@ -220,6 +226,25 @@ public class Profile {
         return transactionList.get(index);
     }
 
+    public Transaction getTransaction(String name) {
+        for (Transaction transaction : transactionList) {
+            if (transaction.getName().equals(name)) {
+                return transaction;
+            }
+        }
+        return null;
+    }
+
+    public boolean isTransaction(String name) {
+        for (Transaction transaction : transactionList) {
+            if (transaction.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //may be unnecessary
     public boolean isTransaction(int index) {
         return (index > -1) && (index < transactionList.size());
     }

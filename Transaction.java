@@ -43,10 +43,29 @@ public class Transaction {
 		this.category.getAccount().deposit(this.amount);
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setAmount(Double amount) {
+		this.unapply();
+		this.amount = amount;
+		this.apply();
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
 	public void setCategory(Category newCategory) {
+		//possibly redundant to have it do this...
 		this.unapply();
 		this.category = newCategory;
 		this.apply();
+	}
+
+	public void setNotes(String notes) {
+		this.notes = notes;
 	}
 
 	//old methods

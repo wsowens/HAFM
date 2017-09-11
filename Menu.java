@@ -125,7 +125,7 @@ public class Menu {
 	public Account accountSelection() {
 		//handle case where there are no accounts?
 		Account account = null;
-		while(account == null) {
+		while (account == null) {
 			String userInput = input.nextLine();
 			if (isValid(userInput, intFormat)) {
 				profile.getAccount(Integer.parseInt(userInput) - 1);
@@ -335,8 +335,8 @@ public class Menu {
 			System.out.println("Deletion cancelled.");
 		}
 	}
-	/*
-	public void transactionMenu() {
+
+	public int transactionMenu() {
 		System.out.println("\n1. Add transaction");
 		System.out.print("2. Update transaction");
 		if (!profile.hasTransaction())
@@ -350,6 +350,7 @@ public class Menu {
 			System.out.println("Error. You must create a transaction first.");
 			value = transactionMenu();
 		}
+		return value;
 	}
 
 	public void transactionCreate() {
@@ -359,9 +360,111 @@ public class Menu {
 		String name = input.nextLine();
 		System.out.println("Amount:");
 		double amount = getValidDouble(input);
+		System.out.println("Date:");
+		String date = getValid(input, Menu.dateFormat);
+		System.out.println("Category:");
+		Category category = categorySelection();
+		System.out.println("Notes:");
+		String notes = input.nextLine();
+		profile.addTransaction(name, amount, date, category, notes);
+	}
 
-	}*/
+	public Transaction transactionSelection() {
+		//handle case of no transactions?
+		Transaction transaction = null;
+		while (transaction == null) {
+			String userInput = input.nextLine();
+			if (isValid(userInput, intFormat)) {
+				profile.getTransaction(Integer.parseInt(userInput) - 1);
+			}
+			else {
+				transaction = profile.getTransaction(userInput);
+			}
+			if (transaction == null) {
+				System.out.println("Error. Invalid transaction.");
+			}
+		}
+		return transaction;
+	}
 
+	public void transactionModify() {
+		System.out.println("Select the number of a transaction to modify it.");
+		Transaction oldTransaction = transactionSelection();
+		Transaction newTransaction = new Transaction(oldTransaction);
+		boolean subMenuLoop = true;
+		while (subMenuLoop) {
+			System.out.println(newTransaction);
+			System.out.println("\nSelect a data field to modify:");
+			System.out.println("1. Name");
+			System.out.println("2. Amount");
+			System.out.println("3. Date");
+			System.out.println("4. Category");
+			System.out.println("5. Notes");
+			System.out.println("6. Cancel changes and exit");
+			System.out.println("7. Save changes and exit");
+			switch (input.nextInt()) {
+			case 1:
+				System.out.println("Enter new name: ");
+				String name = "";
+				boolean invalidName = true;
+				while (invalidName) {
+					name = input.nextLine();
+					if (isValid(name, numFormat)) {
+						System.out.println("Error, names must be non-numeric.");
+						continue;
+					}
+					else if (profile.isTransaction(name)) {
+						System.out.println("Error, name cannot be an existing name.");
+					}
+					else {
+						invalidName = false;
+					}
+				}
+				newTransaction.setName(name);
+				break;
+			case 2:
+				System.out.println("Enter new amount: ");
+				newTransaction.setAmount(getValidDouble(input));
+				break;
+			case 3:
+				input.nextLine();
+				System.out.println("Enter new date: ");
+				newTransaction.date = Menu.getValid(input, Menu.dateFormat);
+				break;
+			case 4:
+				System.out.println("Enter new category: ");
+				Category newCategory = categorySelection();
+				newTransaction.setCategory(newCategory);
+				break;
+			case 5:
+				System.out.println("Enter new notes: ");
+				String notes = input.nextLine();
+				newTransaction.setNotes(notes);
+				break;
+			case 6:
+				subMenuLoop = false;
+				break;
+			case 7:
+				profile.removeTransaction(oldTransaction);
+				profile.addTransaction(newTransaction);
+				subMenuLoop = false;
+			}
+		}
+	}
+	public void transactionDelete() {
+		System.out.println("Select the number of a transaction to delete it.");
+		Transaction transaction = transactionSelection();
+		System.out.println(transaction);
+		if (getConfirmation("Are you sure you want to delete this transaction?")) {
+			if (profile.removeTransaction(transaction)) {
+				System.out.println("Success.");
+			}
+			System.out.println("Deletion failed.");
+		}
+		else {
+			System.out.println("Deletion cancelled.");
+		}
+	}
 	public int exitMenu() {
 		System.out.println("1. Save");
 		System.out.println("2. Exit and Save");

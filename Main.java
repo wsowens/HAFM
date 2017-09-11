@@ -80,12 +80,13 @@ public class Main {
 					case 6:
 						genMenuLoop = false;
 					}
-				break;
+				}
+			break;
 
 			case 2:
 				while (genMenuLoop) {
-					profile.printCategories();
-					switch (menu.CategoryMenu()) {
+					current.printCategories();
+					switch (menu.categoryMenu()) {
 					//creating new category
 					case 1:
 						menu.categoryCreate();
@@ -102,148 +103,29 @@ public class Main {
 
 				}
 				break;
-				//delete all these brackets
-			}
-		}
-	}
-}/*
 			case 3:
 				while (genMenuLoop) {
-					Transaction.printAll();
+					current.printTransactions();
 					switch (menu.transactionMenu()) {
 					case 1:
-						input.nextLine();
-						System.out.println("Name:");
-						String name = input.nextLine();
-						System.out.println("Amount:");
-						double amount = Menu.getValidDouble(input);
-						System.out.println("Date:");
-						String date = Menu.getValid(input, Menu.dateFormat);
-						System.out.println("Category:");
-						//make a safer way of doing this
-						Category category = null;
-						boolean invalidCategory = true;
-						while (invalidCategory) {
-							try {
-								invalidCategory = false;
-								category = Category.categoryMap.get(input.nextLine());
-								if (category == null) {
-									System.out.println("Error. Category does not exist.");
-									invalidCategory = true;
-								}
-							}
-							catch (Exception ex) {
-								System.out.println("Error. Category does not exist.");
-								invalidCategory = true;
-							}
-						}
-						System.out.println("Notes:");
-						String notes = input.nextLine();
-						try {
-							new Transaction(name, amount, date, category, notes);
-						}
-						catch (Exception ex) {
-							System.out.println("User input error. Transaction not created.");
-						}
+						menu.transactionCreate();
 						break;
 					case 2:
-						input.nextLine();
-						System.out.println("Select the number of a transaction to modify it.");
-						index = Menu.getValidInt(input, 1, Transaction.transactionList.size()) -1;
-						Transaction newTransaction = new Transaction(Transaction.transactionList.get(index));
-						while (subMenuLoop) {
-							System.out.println(newTransaction);
-							System.out.println("\nSelect a data field to modify:");
-							System.out.println("1. Name");
-							System.out.println("2. Amount");
-							System.out.println("3. Date");
-							System.out.println("4. Category");
-							System.out.println("5. Notes");
-							System.out.println("6. Cancel changes and exit");
-							System.out.println("7. Save changes and exit");
-							switch (input.nextInt()) {
-							case 1:
-								input.nextLine();
-								System.out.println("Enter new name: ");
-								newTransaction.name = input.nextLine();
-								break;
-							case 2:
-								input.nextLine();
-								System.out.println("Enter new amount: ");
-								newTransaction.modifyAmount(Menu.getValidDouble(input));
-								break;
-							case 3:
-								input.nextLine();
-								System.out.println("Enter new date: ");
-								newTransaction.date = Menu.getValid(input, Menu.dateFormat);
-								break;
-							case 4:
-								input.nextLine();
-								System.out.println("Enter new category: ");
-								//make a safer way of doing this
-								Category newCategory = null;
-								invalidCategory = true;
-								while (invalidCategory) {
-									try {
-										invalidCategory = false;
-										newCategory = Category.categoryMap.get(input.nextLine());
-										if (newCategory == null) {
-											System.out.println("Error. Category does not exist.");
-											invalidCategory = true;
-										}
-									}
-									catch (Exception ex) {
-										System.out.println("Error. Category does not exist.");
-										invalidCategory = true;
-									}
-								}
-								newTransaction.modifyCategory(newCategory);
-								break;
-							case 5:
-								input.nextLine();
-								System.out.println("Enter new notes: ");
-								newTransaction.notes = input.nextLine();
-								break;
-							case 6:
-								newTransaction.deleteTransaction();
-								subMenuLoop = false;
-								break;
-							case 7:
-								try {
-									//this is clunky, fix it
-									Transaction.transactionList.remove(newTransaction);
-									Transaction.transactionList.get(index).deleteTransaction();
-									Transaction.transactionList.add(index, newTransaction);
-								}
-								catch (Exception ex) {
-									newTransaction.deleteTransaction();
-									System.out.println("User input error. Transaction not updated.");
-								}
-								subMenuLoop = false;
-
-							}
-						}
+						menu.transactionModify();
 						break;
 					case 3:
-						input.nextLine();
-						System.out.println("Select the number of a transaction to delete it.");
-						//potential infinite loop, yada yada
-						index =  Menu.getValidInt(input, 1, Transaction.transactionList.size()) -1;
-						System.out.println(Transaction.transactionList.get(index));
-						if (Menu.getConfirmation(input, "Are you sure you want to delete this transaction?")) {
-							Transaction.transactionList.get(index).deleteTransaction();
-							System.out.println("Transaction deleted.");
-						}
-						else {
-							System.out.println("Deletion cancelled.");
-						}
+						menu.transactionDelete();
 						break;
 					case 4:
 						genMenuLoop = false;
 					}
-
 				}
 				break;
+				//remove brackets below
+			}
+		}
+	}
+}/*
 			case 4:
 				input.nextLine();
 				String filename = "finances.txt";
