@@ -17,6 +17,7 @@ public class Profile {
         this(false);
     }
 
+    //old adders based with data fields as arguments... maybe useful, but consider removing
     public void addAccount(String name, double balance) {
         accountList.add(new Account(name, balance));
         dprint("Adding account:\n");
@@ -42,6 +43,43 @@ public class Profile {
         dprint(newTransaction + "\n");
         newTransaction.apply();
         transactionList.add(newTransaction);
+    }
+
+    public void addAccount(Account newAccount) {
+        accountList.add(newAccount);
+        dprint("Adding account:\n");
+        dprint(accountList.get(accountList.size()-1) + "\n");
+    }
+
+    public boolean addCategory(Category newCategory) {
+        if (newCategory.getAccount() == null) {
+           dprint("ERROR. ACCOUNT == NULL");
+            return false;
+        }
+        categoryList.add(newCategory);
+        dprint("Adding category:\n");
+        dprint(categoryList.get(categoryList.size()-1) + "\n");
+        return true;
+    }
+
+    public void addTransaction(Transaction newTransaction) {
+        //handle Category == null, or Account == null
+        dprint("Adding transaction:\n");
+        dprint(newTransaction + "\n");
+        newTransaction.apply();
+        transactionList.add(newTransaction);
+    }
+
+    //delete this if it doesn't work...
+    public boolean removeAccount(Account toDelete) {
+        boolean success = false;
+        for (int i = 0; i < accountList.size(); i++) {
+            if (accountList.get(i).equals(toDelete)) {
+                success = removeAccount(i);
+                break;
+            }
+        }
+        return success;
     }
 
     public boolean removeAccount(int index) {
@@ -86,7 +124,9 @@ public class Profile {
         return true;
     }
 
-    public void updateCategory(int index, Category newCategory) {
+    //potentially unnecessary, can be done with Profile.getCategory(), followed by mutator methods
+    /*
+    public void updateCategory(int index, String name, Number accountList, ) {
         dprint("Updating category from:\n");
         dprint(categoryList.get(index) + "\n");
         dprint("to:\n" + newCategory + "\n");
@@ -95,10 +135,15 @@ public class Profile {
                 transaction.setCategory(newCategory);
             }
         }
-    }
+        categoryList.remove(index);
+        categoryList.add(index, newCategory);
+    }*/
+
 
     public Account getAccount(int index) {
-        //handle index out of bounds
+        if (index < 0 || index >= accountList.size()) {
+            return null;
+        }
         return accountList.get(index);
     }
 
@@ -126,7 +171,9 @@ public class Profile {
     }
 
     public Category getCategory(int index) {
-        //handle index out of bounds
+        if (index < 0 || index >= categoryList.size()) {
+            return null;
+        }
         return categoryList.get(index);
     }
 
@@ -154,12 +201,58 @@ public class Profile {
     }
 
     public Transaction getTransaction(int index) {
-        //handle index out of bounds
+        if (index < 0 || index >= transactionList.size()) {
+            return null;
+        }
         return transactionList.get(index);
     }
 
     public boolean isTransaction(int index) {
         return (index > -1) && (index < transactionList.size());
+    }
+
+    public boolean hasAccount() {
+        return (accountList.size() > 0);
+    }
+
+    public boolean hasCategory() {
+        return (categoryList.size() > 0);
+    }
+
+    public void printAccounts() {
+        int count = 0;
+		for (Account account : accountList) {
+			count++;
+			System.out.printf("%-4s %-20s | $%-1s", "(" + count + ")", account.getName(), Menu.df.format(account.getBalance()));
+			System.out.print("\n");
+		}
+		System.out.printf("     %-20s | $%-1s", "Total", Menu.df.format(getNetWorth()));
+		System.out.print("\n");
+    }
+
+    public void printCategories() {
+        int count = 0;
+        double amountTotal = 0;
+        double remainingTotal = 0;
+		for (Category category : categoryList) {
+			count++;
+            amountTotal += category.getAmount();
+            remainingTotal += category.getRemaining();
+            //holy moly, fix this line
+			System.out.printf("%-4s %-20s | $%-8s | $%-8s | $%-8s | %-1s", "(" + count + ")", category.getName(), Menu.df.format(category.getAmount()), Menu.df.format(category.getRemaining()), Menu.df.format(category.getAmount() - category.getRemaining()), category.getAccount().getName());
+			System.out.print("\n");
+		}
+		System.out.printf("     %-20s | $%-8s | $%-8s | $%-8s", "Total" , Menu.df.format(remainingTotal), Menu.df.format(remainingTotal), Menu.df.format(amountTotal - remainingTotal));
+		System.out.print("\n");
+    }
+
+    public void printTransactions() {
+        int count = 0;
+        for (Transaction transaction : transactionList) {
+            count++;
+            System.out.printf("%-4s %-20s | $%-8s | %-7s | %-15s | %-1s" , "(" + count + ")", transaction.getName() , Menu.df.format(transaction.getAmount()), transaction.getDate(), transaction.getCategory().getName(), transaction.getNotes());
+            System.out.print("\n");
+        }
     }
 
     public double getNetWorth() {
@@ -259,7 +352,11 @@ public class Profile {
         notes = input.nextLine();
         profile.addTransaction(name, amount, date, category, notes);
         System.out.println("Net Worth: " + profile.getNetWorth());
-        System.out.println("Enter the index of an account:");
+
+        profile.printAccounts();
+        profile.printCategories();
+        profile.printTransactions();
+
         profile.removeAccount(0);
         System.out.println("Net Worth: " + profile.getNetWorth());
         profile.removeAccount(1);

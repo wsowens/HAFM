@@ -39,7 +39,7 @@ public class Transaction {
 	}
 
 	public void unapply() {
-		this.category.setRemaining(category.getRemaining() - this.amount);
+		this.category.setRemaining(category.getRemaining() + this.amount);
 		this.category.getAccount().deposit(this.amount);
 	}
 
@@ -48,7 +48,8 @@ public class Transaction {
 		this.category = newCategory;
 		this.apply();
 	}
-	
+
+	//old methods
 	public void addCategory(Category category) {
 		this.category = category;
 		category.owned.add(this);
@@ -69,14 +70,27 @@ public class Transaction {
 		addCategory(newCategory);
 	}
 
-	//careful... ideally this is not public so main cannot access it
-	//of course, this implies that transaction and category are in the same package
-	Category getCategory() {
-		return this.category;
+	public String getName() {
+		return name;
 	}
 
 	public double getAmount() {
 		return amount;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	//comment from earlier (?)
+	//careful... ideally this is not public so main cannot access it
+	//of course, this implies that transaction and category are in the same package
+	public Category getCategory() {
+		return this.category;
+	}
+
+	public String getNotes() {
+		return notes;
 	}
 
 	public void modifyAmount(double newAmount) {

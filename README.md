@@ -5,4 +5,8 @@ My main intent with this project is to update and fix the bugs I left.
   
 -xeranimus  
   
-In the process of making everything much more object-oriented, including the way Transaction interacts with Category. I am in the process of moving the functionality over to "apply()" and "unapply()". For the older functionality, look at the commit before this, or look at the addCategory(category) call I commented out in the Transaction constructor. 
+In the process of making everything much more object-oriented, including the way Transaction interacts with Category. I am in the process of moving the functionality over to "apply()" and "unapply()". For the older functionality, look at the commit before this, or look at the addCategory(category) call I commented out in the Transaction constructor.  
+  
+Another important point, regarding backwards compatibility: Following this commit, the Category "remaining" data field is saved, and is required when loading things in. (This is due to the "apply()" and "unapply()" methods.) Obviously, nobody but me has used this program at the time of writing, so I think the lack of backwards compatibility shouldn't be an issue.  
+  
+Only account management works in this version. 

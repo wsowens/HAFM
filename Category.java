@@ -33,6 +33,15 @@ public class Category {
 		categoryList.add(this);
 		owned = new ArrayList<Transaction>();
 	}
+	public Category(String name, double amount, double remaining, Account account) {
+		this.name = name;
+		this.amount = amount;
+		this.remaining = remaining;
+		categoryMap.put(name, this);
+		this.account = account;
+		categoryList.add(this);
+		owned = new ArrayList<Transaction>();
+	}
 
 
 	public Category(Category toCopy) {
