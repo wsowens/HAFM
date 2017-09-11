@@ -72,14 +72,10 @@ public class Profile {
 
     //delete this if it doesn't work...
     public boolean removeAccount(Account toDelete) {
-        boolean success = false;
-        for (int i = 0; i < accountList.size(); i++) {
-            if (accountList.get(i).equals(toDelete)) {
-                success = removeAccount(i);
-                break;
-            }
+        if (accountList.contains(toDelete)) {
+            return false;
         }
-        return success;
+        return removeAccount(accountList.indexOf(toDelete));
     }
 
     public boolean removeAccount(int index) {
@@ -88,7 +84,7 @@ public class Profile {
         boolean success = true;
         for (Category category : categoryList) {
             if (category.getAccount().equals(accountList.get(index))) {
-                dprint("ERROR: Category still connected to account:\n" + category + "\n");
+                System.out.println("ERROR: Category still connected to account:\n" + category + "\n");
                 success = false;
             }
         }
@@ -99,13 +95,20 @@ public class Profile {
         return success;
     }
 
+    public boolean removeCategory(Category toDelete) {
+        if (categoryList.contains(toDelete)) {
+            return false;
+        }
+        return removeCategory(categoryList.indexOf(toDelete));
+    }
+
     public boolean removeCategory(int index) {
         dprint("Removing category:\n");
         dprint(categoryList.get(index) + "\n");
         boolean success = true;
         for (Transaction transaction : transactionList) {
             if (transaction.getCategory().equals(categoryList.get(index))) {
-                dprint("ERROR: Transaction still connected to category:\n" + transaction + "\n");
+                System.out.println("ERROR: Transaction still connected to category:\n" + transaction + "\n");
                 success = false;
             }
         }
@@ -124,9 +127,15 @@ public class Profile {
         return true;
     }
 
-    //potentially unnecessary, can be done with Profile.getCategory(), followed by mutator methods
-    /*
-    public void updateCategory(int index, String name, Number accountList, ) {
+    public boolean updateCategory(Category oldCategory, Category newCategory) {
+        if (!categoryList.contains(oldCategory)) {
+            return false;
+        }
+        updateCategory(categoryList.indexOf(oldCategory), newCategory);
+        return true;
+    }
+
+    public void updateCategory(int index, Category newCategory) {
         dprint("Updating category from:\n");
         dprint(categoryList.get(index) + "\n");
         dprint("to:\n" + newCategory + "\n");
@@ -137,7 +146,11 @@ public class Profile {
         }
         categoryList.remove(index);
         categoryList.add(index, newCategory);
-    }*/
+    }
+
+    public void updateTransaction(Transaction newTransaction) {
+        return;
+    }
 
 
     public Account getAccount(int index) {
@@ -217,6 +230,10 @@ public class Profile {
 
     public boolean hasCategory() {
         return (categoryList.size() > 0);
+    }
+
+    public boolean hasTransaction() {
+        return (transactionList.size() > 0);
     }
 
     public void printAccounts() {

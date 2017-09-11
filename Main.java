@@ -80,139 +80,21 @@ public class Main {
 					case 6:
 						genMenuLoop = false;
 					}
-				}
-				//delete the braces below this;
-			}
-		}
-	} /*
 				break;
+
 			case 2:
 				while (genMenuLoop) {
-					subMenuLoop = true;
-					Category.printAll();
-					switch (menu.genMenu(input, "category")) {
+					profile.printCategories();
+					switch (menu.CategoryMenu()) {
 					//creating new category
 					case 1:
-						input.nextLine();
-						System.out.println("Name:");
-						String name = input.nextLine();
-						System.out.println("Amount:");
-						double amount = Menu.getValidDouble(input);
-						System.out.println("Account:");
-						//make a safer way of accessing this
-						Account account = null;
-						boolean invalidAccount = true;
-						while (invalidAccount) {
-							try {
-								invalidAccount = false;
-								account = Account.accountMap.get(input.nextLine());
-								if (account == null) {
-									System.out.println("Error. Account does not exist.");
-									invalidAccount = true;
-								}
-							}
-							catch (Exception ex) {
-								System.out.println("Error. Account does not exist.");
-								invalidAccount = true;
-							}
-						}
-						try {
-							new Category(name, amount, account);
-						}
-						catch (Exception ex) {
-							System.out.println("User input error. Category not created.");
-						}
+						menu.categoryCreate();
 						break;
 					case 2:
-						input.nextLine();
-						System.out.println("Select the number of a category to modify it.");
-						//potential infinite loop if categoryList.size() == 0, fix later
-						index = Menu.getValidInt(input, 1, Category.categoryList.size()) - 1;
-						Category newCategory = new Category(Category.categoryList.get(index));
-						while (subMenuLoop) {
-							System.out.println(newCategory);
-							System.out.println("\nSelect a data field to modify:");
-							System.out.println("1. Name");
-							System.out.println("2. Amount");
-							System.out.println("3. Account");
-							System.out.println("4. Cancel changes and exit");
-							System.out.println("5. Save changes and exit");
-							switch (input.nextInt()) {
-							case 1:
-								boolean assignName = true;
-								while (assignName)
-									assignName = false;
-									input.nextLine();
-									System.out.println("Enter new name: ");
-									String newName = input.nextLine();
-									for (Category category : Category.categoryList) {
-										//add an && statement ensuring that category is not the same as the original being modified (use index)
-										if (category.getName().equals(newName)) {
-											assignName = true;
-											System.out.println("Error: duplicate category name already exists.");
-										}
-									}
-									newCategory.setName(newName);
-								break;
-							case 2:
-								input.nextLine();
-								System.out.println("Enter new amount: ");
-								newCategory.setAmount(Menu.getValidDouble(input));
-								break;
-							case 3:
-								input.nextLine();
-								System.out.println("Enter new account: ");
-								Account newAccount = null;
-								invalidAccount = true;
-								while (invalidAccount) {
-									try {
-										invalidAccount = false;
-										newAccount = Account.accountMap.get(input.nextLine());
-										if (newAccount == null) {
-											System.out.println("Error. Account does not exist.");
-											invalidAccount = true;
-										}
-									}
-									catch (Exception ex) {
-										System.out.println("Error. Account does not exist.");
-										invalidAccount = true;
-									}
-								}
-								newCategory.account = newAccount;
-								break;
-							case 4:
-								newCategory.deleteCategory();
-								subMenuLoop = false;
-								break;
-							case 5:
-								try {
-									Category.categoryList.remove(newCategory);
-									Category.categoryList.get(index).updateCategory(newCategory);
-									Category.categoryMap.put(newCategory.getName(), newCategory);
-									Category.categoryList.add(index, newCategory);
-								}
-								catch (Exception ex){
-									newCategory.deleteCategory();
-									System.out.println("User input error. Category not updated.");
-								}
-								subMenuLoop = false;
-
-							}
-						}
+						menu.categoryModify();
 						break;
 					case 3:
-						input.nextLine();
-						System.out.println("Select the number of a category to delete it.");
-						//potential infinite loop if categoryList.size() == 0, fix later
-						index = Menu.getValidInt(input, 1, Category.categoryList.size()) - 1;
-						System.out.println(Category.categoryList.get(index));
-						if (Menu.getConfirmation(input, "Are you sure you want to delete this category?")) {
-							Category.categoryList.get(index).deleteCategory();
-							System.out.println("Category deleted.");
-						}
-						else {
-							System.out.println("Deletion cancelled.");
-						}
+						menu.categoryDelete();
 						break;
 					case 4:
 						genMenuLoop = false;
@@ -220,11 +102,15 @@ public class Main {
 
 				}
 				break;
+				//delete all these brackets
+			}
+		}
+	}
+}/*
 			case 3:
 				while (genMenuLoop) {
-					subMenuLoop = true;
 					Transaction.printAll();
-					switch (Menu.genMenu(input, "transaction")) {
+					switch (menu.transactionMenu()) {
 					case 1:
 						input.nextLine();
 						System.out.println("Name:");
@@ -451,5 +337,5 @@ public class Main {
 		System.out.println("Goodbye.");
 		input.close();
 
-	}*/
-}
+	}
+}*/

@@ -67,6 +67,10 @@ public class Category {
 		this.remaining = newAmount - diff;
 	}
 
+	public void setAccount(Account account) {
+		this.account = account;
+	}
+
 	public void setRemaining(double newRemaining) {
 		this.remaining = newRemaining;
 	}
