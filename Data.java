@@ -6,136 +6,93 @@ import java.text.DecimalFormat;
 
 
 public class Data {
+	public static String getExtension(String filename) {
+		String[] split = filename.split("[.]");
+		if (split.length == 1) {
+			return "";
+		}
+		return split[split.length-1];
+	}
 
-	public static boolean save(String filename) {
+	public static String getValidLoad(Scanner input) {
+		boolean fileUnapproved = true;
+		String filename = "finances.xls";
+		while (fileUnapproved) {
+			System.out.println("Please enter a filename to open a file. (Type \'new\' for new file.)");
+			filename = input.nextLine();
+			if (filename.equals("new")) {
+				fileUnapproved = false;
+			}
+			else {
+				if (!(new File(filename)).exists()) {
+					System.out.println("Error, provided file does not exist.");
+					continue;
+				}
+				//update this later when we support different delimiters
+				if (!Data.test(filename, "/t")) {
+					System.out.println("File cannot be read.");
+				}
+				else {
+					fileUnapproved = false;
+				}
+			}
+		}
+		return filename;
+	}
+
+	public static String getValidFilename(Scanner input) {
+		boolean fileUnapproved = true;
+		String filename = "finances.xls";
+		while (fileUnapproved) {
+			System.out.println("Save file as:");
+			fileUnapproved = false;
+			filename = input.nextLine();
+			if (getExtension(filename).equals("")) {
+				filename += ".xls";
+			}
+			if ((new File(filename)).exists()) {
+				System.out.println("File " + filename + " already exists. Overwrite? (Enter 'y' if yes.)");
+				if (!input.nextLine().equals("y")) {
+					fileUnapproved = true;
+				}
+			}
+		}
+		return filename;
+	}
+
+	public static boolean save(Profile profile, String filename, String delimiter) {
 		try {
 			File file = new File(filename);
 			PrintWriter export = new PrintWriter(file);
-			for (Account account : Account.accountList) {
-				export.print(account.name);
-				export.print(";");
-				export.print(account.balance);
-				export.print(";");
-				export.print("\n");
-			}
-			export.print("&&&");
-			for (Category category : Category.categoryList) {
-				export.print(category.getName());
-				export.print(";");
-				export.print(category.getAmount());
-				export.print(";");
-				export.print(category.getRemaining());
-				export.print(";");
-				export.print(category.account.name);
-				export.print(";");
-				export.print("\n");
-			}
-			export.print("&&&");
-			for (Transaction transaction : Transaction.transactionList) {
-				export.print(transaction.name);
-				export.print(";");
-				export.print(transaction.getAmount());
-				export.print(";");
-				export.print(transaction.date);
-				export.print(";");
-				export.print(transaction.getCategory().getName());
-				export.print(";");
-				export.print(transaction.notes);
-				export.print(";");
-				export.print("\n");
-			}
-			export.print("&&&");
+			export.print(profile.getDelimited(delimiter));
 			export.close();
 			return true;
 		}
-
 		catch (Exception ex) {
 			return false;
 		}
 	}
 
-	public static boolean print(String filename) {
-		DecimalFormat df = new DecimalFormat("###.##");
+	public static boolean print(Profile profile, String filename) {
+		//do this better
 		try {
 			File file = new File(filename);
 			PrintWriter export = new PrintWriter(file);
-			export.println("Accounts:");
-			int count = 0;
-			for (Account account : Account.accountList) {
-				count++;
-				export.printf("(" + count + ") %-16s | $%-1s", account.name, account.balance);
-				export.print("\n");
-			}
-			export.printf("    %-16s | $%-1s", "Total", df.format(Account.getTotal()));
-			export.print("\n");
-
-			export.println("Categories:");
-			count = 0;
-			for (Category category :Category.categoryList) {
-				count++;
-				export.printf("(" + count +") %-16s | $%-8s | $%-8s | $%-8s | %-1s", category.getName(), df.format(category.getAmount()), df.format(category.remaining), df.format(category.getAmount() - category.remaining), category.account.name);
-				export.print("\n");
-			}
-			export.printf("    %-16s | $%-8s | $%-8s | $%-8s", "Total" , df.format(Category.getAmountTotal()), df.format(Category.getRemainingTotal()), df.format(Category.getAmountTotal() - Category.getRemainingTotal()));
-			export.print("\n");
-
-			export.println("Transactions:");
-			count = 0;
-			for (Transaction transaction : Transaction.transactionList) {
-				count++;
-				export.printf("(" + count + ") %-16s | $%-8s | %-7s | %-15s | %-1s" ,  transaction.name , df.format(transaction.getAmount()), transaction.date, transaction.getCategory().getName(), transaction.notes);
-				export.print("\n");
-			}
+			export.print(profile);
 			export.close();
 			return true;
 		}
-
 		catch (Exception ex) {
-			return false;
-		}
-	}
-
-
-	public static boolean read(String filename) {
-		try {
-			Scanner input = new Scanner(new File(filename));
-			String text = input.useDelimiter("\\A").next();
-
-			String[] chunks = text.split("&&&");
-			String[] accounts = chunks[0].split("\n");
-			String[] categories = chunks[1].split("\n");
-			String[] transactions = chunks[2].split("\n");
-
-			for (String line : accounts) {
-				String[] temp = line.split(";");
-				new Account(temp[0], Double.parseDouble(temp[1]));
-			}
-
-			for (String line : categories) {
-				String[] temp = line.split(";");
-				new Category(temp[0], Double.parseDouble(temp[1]), Account.accountMap.get(temp[2]));
-			}
-
-			for (String line : transactions) {
-				String[] temp = line.split(";");
-				Transaction trans = new Transaction(temp[0], Double.parseDouble(temp[1]), temp[2], Category.categoryMap.get(temp[3]), temp[4]);
-				//accounting for the fact that these transactions have already been logged
-				trans.getCategory().account.balance += trans.getAmount();
-			}
-
-			input.close();
-			return true;
-		}
-
-		catch (Exception ex){
-			System.out.println("Error. File cannot be read. Data may be corrupted.");
 			return false;
 		}
 	}
 
 	//new method, generates a profile automatically
-	public static Profile readToProfile(String filename) {
+	public static Profile read(String filename, String delimiter) {
 		Profile loadedProfile = new Profile();
+		if (filename.equals("new")) {
+			return loadedProfile;
+		}
 		Scanner input;
 		try {
 			input = new Scanner(new File(filename));
@@ -145,91 +102,41 @@ public class Data {
 			return loadedProfile;
 		}
 		String text = input.useDelimiter("\\A").next();
-
-		String[] chunks = text.split("&&&");
-		String[] accounts = chunks[0].split("\n");
-		String[] categories = chunks[1].split("\n");
-		String[] transactions = chunks[2].split("\n");
-
-		for (String line : accounts) {
-			String[] temp = line.split(";");
+		String[] lines = text.split("\n");
+		int i = 0;
+		while (!lines[++i].toLowerCase().equals("categories")) {
+			String[] temp = lines[i].split(delimiter);
 			Account account = new Account(temp[0], Double.parseDouble(temp[1]));
 			loadedProfile.addAccount(account);
 		}
-
-		for (String line : categories) {
-			String[] temp = line.split(";");
-			Category category = new Category(temp[0], Double.parseDouble(temp[1]), Double.parseDouble(temp[2]), Account.accountMap.get(temp[3]));
+		while (!lines[++i].toLowerCase().equals("transactions")) {
+			String[] temp = lines[i].split(delimiter);
+			Category category = new Category(temp[0], Double.parseDouble(temp[1]), Double.parseDouble(temp[2]), loadedProfile.getAccount(temp[4]));
 			loadedProfile.addCategory(category);
 		}
-		loadedProfile.printAccounts();
-		loadedProfile.printCategories();
-		System.out.println("==============");
-		for (String line : transactions) {
-			String[] temp = line.split(";");
-			Transaction trans = new Transaction(temp[0], Double.parseDouble(temp[1]), temp[2], Category.categoryMap.get(temp[3]), temp[4]);
+		while (++i < lines.length) {
+			String[] temp = lines[i].split(delimiter);
+			Transaction trans = new Transaction(temp[0], Double.parseDouble(temp[1]), temp[2], loadedProfile.getCategory(temp[3]), temp[4]);
 			//accounting for the fact that these transactions have already been logged
 			trans.unapply();
 			loadedProfile.addTransaction(trans);
 		}
-
 		input.close();
 		return loadedProfile;
 	}
 
-	//this is a very generic approach, get more particular with it later
-	public static boolean test(File file) {
-		Profile loadedProfile = new Profile();
-		boolean validFile = true;
-		Scanner input;
+	//this is a very amateur approach, get more particular with it later
+	public static boolean test(String filename, String delimiter) {
 		try {
-				input = new Scanner(file);
+			read(filename, delimiter);
 		}
-		catch (java.io.FileNotFoundException ex) {
+		catch(Exception ex) {
 			return false;
 		}
-		try {
-			String text = input.useDelimiter("\\A").next();
-			String[] chunks = text.split("&&&");
-			String[] accounts = chunks[0].split("\n");
-			String[] categories = chunks[1].split("\n");
-			String[] transactions = chunks[2].split("\n");
-
-			for (String line : accounts) {
-				String[] temp = line.split(";");
-				Account account = new Account(temp[0], Double.parseDouble(temp[1]));
-				loadedProfile.addAccount(account);
-			}
-
-			for (String line : categories) {
-				String[] temp = line.split(";");
-				Category category = new Category(temp[0], Double.parseDouble(temp[1]), Double.parseDouble(temp[2]), Account.accountMap.get(temp[3]));
-				loadedProfile.addCategory(category);
-			}
-			for (String line : transactions) {
-				String[] temp = line.split(";");
-				Transaction trans = new Transaction(temp[0], Double.parseDouble(temp[1]), temp[2], Category.categoryMap.get(temp[3]), temp[4]);
-				//accounting for the fact that these transactions have already been logged
-				trans.unapply();
-				loadedProfile.addTransaction(trans);
-			}
-		}
-		catch (Exception ex) {
-			validFile = false;
-		}
-		finally {
-			input.close();
-		}
-		return validFile;
+		return true;
 	}
 
-	static void arrayPrint(Object[] array) {
-		for (int i = 0; i < array.length; i++) {
-			System.out.print("(" + i + ") " + array[i] + "|");
-		}
-		System.out.print("\n");
-	}
-
+	//almost certainly useless at this point
 	static void wipe() {
 		Transaction[] temp = Transaction.transactionList.toArray(new Transaction[Transaction.transactionList.size()]);
 		for (Transaction transaction : temp) {
@@ -245,16 +152,5 @@ public class Data {
 			account.deleteAccount();
 		}
 		Account.clearNull();
-	}
-
-	public static void main(String[] args) {
-		System.out.println("Loading finances...");
-		Profile profile = readToProfile("C:/Users/Will/Programming/test-finances.txt");
-		profile.printAccounts();
-        profile.printCategories();
-        profile.printTransactions();
-		for (String item : args) {
-			System.out.println("Testing " + item + "\t" + test(new File(item)));
-		}
 	}
 }

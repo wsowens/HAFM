@@ -1,54 +1,24 @@
-import java.text.DecimalFormat;
 import java.util.Scanner;
-import java.io.File;
-import java.io.PrintWriter;
 import java.io.FileNotFoundException;
 
 public class Main {
-	public static DecimalFormat df = new DecimalFormat("###.##");
-
 	public static void main(String[] args) {
 		Scanner input = new Scanner(System.in);
 		System.out.println("=====Welcome to the #Adulting Finance Manager v. 2.0=====\n");
 
-		//this is done to avoid the 'current might not have been initialized' error
-		Profile current = new Profile();
-		boolean importIncomplete = true;
-		while (importIncomplete) {
-			System.out.println("Please enter a filename to open a file. (Type \'new\' for new file.)");
-			String userInput = input.nextLine();
-			if (userInput.equals("new")) {
-				System.out.println("Creating new file.");
-				importIncomplete = false;
-			}
-			else {
-				File file = new File(userInput);
-				if (!file.exists()) {
-					System.out.println("Error, provided file does not exist.");
-					continue;
-				}
-				if (Data.test(file)) {
-					current = Data.readToProfile(userInput);
-					importIncomplete = false;
-				}
-				else {
-					System.out.println("File cannot be read.");
-				}
-			}
-		}
+		String filename = Data.getValidLoad(input);
+		//automatic delimiter knowledge based on file extension, later
+		Profile current = Data.read(filename, "\t");
 
 		Menu menu = new Menu(input, current);
+
 		System.out.println("\nWelcome! You currently have a net worth of: ");
 		System.out.println("$" + Menu.formatNum(current.getNetWorth()));
-
 		System.out.println("\nWhat would you like to do?");
 
 		boolean mainMenuLoop = true;
 		boolean genMenuLoop = true;
 		boolean subMenuLoop = true;
-
-		int index = 0;
-
 		while (mainMenuLoop) {
 			genMenuLoop = true;
 			switch (menu.mainMenu()) {
@@ -56,7 +26,7 @@ public class Main {
 			case 1:
 				while (genMenuLoop) {
 					subMenuLoop = true;
-					current.printAccounts();
+					menu.printAccounts();
 					switch (menu.accountMenu()) {
 					//create new account selected
 					case 1:
@@ -85,7 +55,7 @@ public class Main {
 
 			case 2:
 				while (genMenuLoop) {
-					current.printCategories();
+					menu.printCategories();
 					switch (menu.categoryMenu()) {
 					//creating new category
 					case 1:
@@ -105,7 +75,7 @@ public class Main {
 				break;
 			case 3:
 				while (genMenuLoop) {
-					current.printTransactions();
+					menu.printTransactions();
 					switch (menu.transactionMenu()) {
 					case 1:
 						menu.transactionCreate();
@@ -122,27 +92,10 @@ public class Main {
 				}
 				break;
 				//remove brackets below
-			}
-		}
-	}
-}/*
 			case 4:
-				input.nextLine();
-				String filename = "finances.txt";
-				boolean fileUnapproved = true;
-				while (fileUnapproved) {
-					System.out.println("Print file as:");
-					fileUnapproved = false;
-					filename = input.nextLine();
-					if ((new File(filename)).exists()) {
-						System.out.println("File " + filename + " already exists. Overwrite? (Enter 'y' if yes.)");
-						if (!input.nextLine().equals("y")) {
-							fileUnapproved = true;
-						}
-					}
-				}
-				if (Data.print(filename)) {
-					System.out.println("Data successfully printed to " + filename + ".");
+				String printFilename = Data.getValidFilename(input);
+				if (Data.print(current, printFilename)) {
+					System.out.println("Data successfully printed to " + printFilename + ".");
 				}
 				else {
 					System.out.println("Error occurred. Data not printed.");
@@ -150,74 +103,40 @@ public class Main {
 				break;
 			case 5:
 				while (genMenuLoop) {
-					switch(Menu.exitMenu(input)) {
+					boolean isCase1 = false;
+					switch(menu.exitMenu()) {
 					case 1:
-						input.nextLine();
-						filename = "finances.txt";
-						fileUnapproved = true;
-						while (fileUnapproved) {
-							System.out.println("Save file as:");
-							fileUnapproved = false;
-							filename = input.nextLine();
-							if ((new File(filename)).exists()) {
-								System.out.println("File " + filename + " already exists. Overwrite? (Enter 'y' if yes.)");
-								if (!input.nextLine().equals("y")) {
-									fileUnapproved = true;
-								}
-							}
-						}
-						if (Data.save(filename)) {
-							System.out.println("Data successfully saved as " + filename + ".");
-						}
-						else {
-							System.out.println("Error occurred. Data not saved.");
-						}
-						break;
+						isCase1 = true;
 					case 2:
-						input.nextLine();
-						filename = "finances.txt";
-						fileUnapproved = true;
-						while (fileUnapproved) {
-							System.out.println("Save file as:");
-							fileUnapproved = false;
-							filename = input.nextLine();
-							if ((new File(filename)).exists()) {
-								System.out.println("File " + filename + " already exists. Overwrite? (Enter 'y' if yes.)");
-								if (!input.nextLine().equals("y")) {
-									fileUnapproved = true;
-								}
-							}
-						}
-						if (Data.save(filename)) {
+						filename = Data.getValidFilename(input);
+						//handle extensions/delimiters later
+						if (Data.save(current, filename, "\t")) {
 							System.out.println("Data successfully saved as " + filename + ".");
 						}
 						else {
 							System.out.println("Error occurred. Data not saved.");
 						}
-						System.out.println("Are you sure you want to quit? (Enter 'y' if yes.)");
-						if (input.next().toLowerCase().equals("y")) {
+						if (isCase1) {
+							break;
+						}
+						if (menu.getConfirmation("Are you sure you want to quit?")) {
 							mainMenuLoop = false;
 							genMenuLoop = false;
 						}
 						break;
 					case 3:
-						System.out.println("Are you sure you want to quit? (Enter 'y' if yes.)");
-						if (input.next().toLowerCase().equals("y")) {
+						if (menu.getConfirmation("Are you sure you want to quit?")) {
 							mainMenuLoop = false;
 							genMenuLoop = false;
 						}
 					case 4:
 						genMenuLoop = false;
 					}
-
 				}
 				break;
-			default:
-				System.out.println("Error: invalid input");
 			}
 		}
 		System.out.println("Goodbye.");
 		input.close();
-
 	}
-}*/
+}

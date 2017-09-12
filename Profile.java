@@ -72,7 +72,7 @@ public class Profile {
 
     //delete this if it doesn't work...
     public boolean removeAccount(Account toDelete) {
-        if (accountList.contains(toDelete)) {
+        if (!accountList.contains(toDelete)) {
             return false;
         }
         return removeAccount(accountList.indexOf(toDelete));
@@ -96,7 +96,7 @@ public class Profile {
     }
 
     public boolean removeCategory(Category toDelete) {
-        if (categoryList.contains(toDelete)) {
+        if (!categoryList.contains(toDelete)) {
             return false;
         }
         return removeCategory(categoryList.indexOf(toDelete));
@@ -142,6 +142,8 @@ public class Profile {
     }
 
     public void updateCategory(int index, Category newCategory) {
+        //resetting the remaining amount, so the transactions don't count twice
+        newCategory.setRemaining(newCategory.getAmount());
         dprint("Updating category from:\n");
         dprint(categoryList.get(index) + "\n");
         dprint("to:\n" + newCategory + "\n");
@@ -261,40 +263,78 @@ public class Profile {
         return (transactionList.size() > 0);
     }
 
-    public void printAccounts() {
+    public String getAccountString() {
         int count = 0;
+        String output = "";
 		for (Account account : accountList) {
 			count++;
-			System.out.printf("%-4s %-20s | $%-1s", "(" + count + ")", account.getName(), Menu.df.format(account.getBalance()));
-			System.out.print("\n");
+			output += String.format("%-4s %-20s | $%-1s", "(" + count + ")", account.getName(), Menu.formatNum(account.getBalance()));
+			output += "\n";
 		}
-		System.out.printf("     %-20s | $%-1s", "Total", Menu.df.format(getNetWorth()));
-		System.out.print("\n");
+		output += String.format("     %-20s | $%-1s", "Total", Menu.formatNum(getNetWorth()));
+		output += "\n";
+        return output;
     }
 
-    public void printCategories() {
+    public String getCategoryString() {
         int count = 0;
         double amountTotal = 0;
         double remainingTotal = 0;
+        String output = "";
 		for (Category category : categoryList) {
 			count++;
             amountTotal += category.getAmount();
             remainingTotal += category.getRemaining();
             //holy moly, fix this line
-			System.out.printf("%-4s %-20s | $%-8s | $%-8s | $%-8s | %-1s", "(" + count + ")", category.getName(), Menu.df.format(category.getAmount()), Menu.df.format(category.getRemaining()), Menu.df.format(category.getAmount() - category.getRemaining()), category.getAccount().getName());
-			System.out.print("\n");
+			output += String.format("%-4s %-20s | $%-8s | $%-8s | $%-8s | %-1s", "(" + count + ")", category.getName(), Menu.formatNum(category.getAmount()), Menu.formatNum(category.getRemaining()), Menu.formatNum(category.getAmount() - category.getRemaining()), category.getAccount().getName());
+			output += String.format("\n");
 		}
-		System.out.printf("     %-20s | $%-8s | $%-8s | $%-8s", "Total" , Menu.df.format(remainingTotal), Menu.df.format(remainingTotal), Menu.df.format(amountTotal - remainingTotal));
-		System.out.print("\n");
+		output += String.format("     %-20s | $%-8s | $%-8s | $%-8s", "Total" , Menu.formatNum(amountTotal), Menu.formatNum(remainingTotal), Menu.formatNum(amountTotal - remainingTotal));
+		output += "\n";
+        return output;
     }
 
-    public void printTransactions() {
+    public String getTransactionString() {
         int count = 0;
+        String output = "";
         for (Transaction transaction : transactionList) {
             count++;
-            System.out.printf("%-4s %-20s | $%-8s | %-7s | %-15s | %-1s" , "(" + count + ")", transaction.getName() , Menu.df.format(transaction.getAmount()), transaction.getDate(), transaction.getCategory().getName(), transaction.getNotes());
-            System.out.print("\n");
+            output += String.format("%-4s %-20s | $%-8s | %-7s | %-15s | %-1s" , "(" + count + ")", transaction.getName() , Menu.formatNum(transaction.getAmount()), transaction.getDate(), transaction.getCategory().getName(), transaction.getNotes());
+            output += "\n";
         }
+        return output;
+    }
+
+    public String getDelimited(String del) {
+        String output = "";
+        output += "Accounts\n";
+        for (Account acc : accountList) {
+            output += acc.getName() + del + Menu.formatNum(acc.getBalance()) + "\n";
+        }
+        output += "Categories\n";
+        for (Category cat : categoryList) {
+            output += cat.getName() + del;
+            output += Menu.formatNum(cat.getAmount()) + del;
+            output += Menu.formatNum(cat.getRemaining()) + del;
+            output += Menu.formatNum(cat.getAmount() - cat.getRemaining()) + del;
+            output += cat.getAccount().getName() + "\n";
+        }
+        output += "Transactions\n";
+        for (Transaction tran : transactionList) {
+            output += tran.getName() + del;
+            output += Menu.formatNum(tran.getAmount()) + del;
+            output += tran.getDate() + del;
+            output += tran.getCategory().getName() + del;
+            output += tran.getNotes() + "\n";
+        }
+        return output;
+    }
+
+    public String toString() {
+        String output = "Accounts:\n" + getAccountString();
+        output += "\nCategories:\n" + getCategoryString();
+        output += "\nTransactions:\n" + getTransactionString();
+        return output;
     }
 
     public double getNetWorth() {
@@ -395,10 +435,13 @@ public class Profile {
         profile.addTransaction(name, amount, date, category, notes);
         System.out.println("Net Worth: " + profile.getNetWorth());
 
-        profile.printAccounts();
-        profile.printCategories();
-        profile.printTransactions();
+        System.out.println(profile.getAccountString());
+        System.out.println(profile.getCategoryString());
+        System.out.println(profile.getTransactionString());
+        Data.save(profile, "test-delimited.xls", "\t");
 
+        System.out.println("==========");
+        System.out.println(profile);
         profile.removeAccount(0);
         System.out.println("Net Worth: " + profile.getNetWorth());
         profile.removeAccount(1);

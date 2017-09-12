@@ -4,15 +4,15 @@ import java.util.regex.*;
 import java.lang.Integer;
 
 public class Menu {
-	static Pattern dollarFormat = Pattern.compile("[$]?\\d*[.]?\\d*");
-	static Pattern dateFormat = Pattern.compile("\\d{2}[/]\\d{2}[/]\\d{4}");
-	static Pattern numFormat = Pattern.compile("\\d*[.]?\\d*");
-	static Pattern intFormat = Pattern.compile("\\d*");
+	public static Pattern dollarFormat = Pattern.compile("[$]?\\d*[.]?\\d*");
+	public static Pattern dateFormat = Pattern.compile("\\d{2}[/]\\d{2}[/]\\d{4}");
+	public static Pattern numFormat = Pattern.compile("\\d*[.]?\\d*");
+	public static Pattern intFormat = Pattern.compile("\\d{1,}");
 
-	static DecimalFormat df = new DecimalFormat("###.##");
+	private static DecimalFormat df = new DecimalFormat("###.##");
 
-	Scanner input;
-	Profile profile;
+	private Scanner input;
+	private Profile profile;
 
 	public Menu(Scanner input, Profile profile) {
 		this.input = input;
@@ -54,7 +54,19 @@ public class Menu {
 
 	public boolean getConfirmation(String question) {
 		System.out.println(question + " (Enter \'y\' if yes.)");
-		return input.next().toLowerCase().equals("y");
+		return input.nextLine().toLowerCase().equals("y");
+	}
+
+	public void printAccounts() {
+		System.out.println(profile.getAccountString());
+	}
+
+	public void printCategories() {
+		System.out.println(profile.getCategoryString());
+	}
+
+	public void printTransactions() {
+		System.out.println(profile.getTransactionString());
 	}
 
 	public int mainMenu(){
@@ -64,7 +76,7 @@ public class Menu {
 		if (!profile.hasAccount())
 			System.out.print("\t[Create Accounts First]");
 		System.out.print("\n3. Transactions");
-		if (!profile.hasAccount())
+		if (!profile.hasCategory())
 			System.out.print("\t[Create Categories First]");
 		System.out.println("\n4. Print");
 		System.out.println("5. Save and Exit");
@@ -78,15 +90,6 @@ public class Menu {
 			value = mainMenu();
 		}
 		return value;
-	}
-
-	//potentially delete
-	public int genMenu(String fill) {
-		System.out.println("\n1. Add " + fill);
-		System.out.println("2. Update " + fill);
-		System.out.println("3. Remove " + fill);
-		System.out.println("4. Back");
-		return getValidInt(input, 1, 4);
 	}
 
 	public int accountMenu() {
@@ -128,13 +131,13 @@ public class Menu {
 		while (account == null) {
 			String userInput = input.nextLine();
 			if (isValid(userInput, intFormat)) {
-				profile.getAccount(Integer.parseInt(userInput) - 1);
+				account = profile.getAccount(Integer.parseInt(userInput) - 1);
 			}
 			else {
 				account = profile.getAccount(userInput);
 			}
 			if (account == null) {
-				System.out.println("Error. Invalid account.");
+				System.out.println("Error. \'" + userInput + "\' is not a valid account.");
 			}
 		}
 		return account;
@@ -183,8 +186,8 @@ public class Menu {
 		Account withdrawAccount = accountSelection();
 		System.out.println("Select the number of an account to deposit into.");
 		Account depositAccount = accountSelection();
-		System.out.println(withdrawAccount);
-		System.out.println(depositAccount);
+		System.out.println("Withdrawing from:\t" + withdrawAccount);
+		System.out.println("Depositing into:\t" + depositAccount);
 		System.out.println("Enter an amount to transfer.");
 		double amount = getValidDouble(input);
 		if (getConfirmation("Transfer $" + amount + " from "
@@ -242,6 +245,7 @@ public class Menu {
 		String name = input.nextLine();
 		System.out.println("Amount:");
 		double amount = getValidDouble(input);
+		System.out.println("Account:");
 		Account account = accountSelection();
 		profile.addCategory(name, amount, account);
 	}
@@ -252,13 +256,13 @@ public class Menu {
 		while (category == null) {
 			String userInput = input.nextLine();
 			if (isValid(userInput, numFormat)) {
-				profile.getCategory(Integer.parseInt(userInput) - 1);
+				category = profile.getCategory(Integer.parseInt(userInput) - 1);
 			}
 			else {
 				category = profile.getCategory(userInput);
 			}
 			if (category == null) {
-				System.out.println("Error. Invalid category.");
+				System.out.println("Error. \'" + userInput + "\' is not a valid category.");
 			}
 		}
 		return category;
@@ -306,6 +310,7 @@ public class Menu {
 				System.out.println("Enter new account: ");
 				Account account = accountSelection();
 				newCategory.setAccount(account);
+				break;
 			case 4:
 				subMenuLoop = false;
 				break;
@@ -329,7 +334,9 @@ public class Menu {
 			if (profile.removeCategory(category)) {
 				System.out.println("Success.");
 			}
-			System.out.println("Deletion failed.");
+			else {
+				System.out.println("Deletion failed.");
+			}
 		}
 		else {
 			System.out.println("Deletion cancelled.");
@@ -375,13 +382,13 @@ public class Menu {
 		while (transaction == null) {
 			String userInput = input.nextLine();
 			if (isValid(userInput, intFormat)) {
-				profile.getTransaction(Integer.parseInt(userInput) - 1);
+				transaction = profile.getTransaction(Integer.parseInt(userInput) - 1);
 			}
 			else {
 				transaction = profile.getTransaction(userInput);
 			}
 			if (transaction == null) {
-				System.out.println("Error. Invalid transaction.");
+				System.out.println("Error. \'" + userInput + "\' is not a valid transaction.");
 			}
 		}
 		return transaction;
@@ -402,7 +409,7 @@ public class Menu {
 			System.out.println("5. Notes");
 			System.out.println("6. Cancel changes and exit");
 			System.out.println("7. Save changes and exit");
-			switch (input.nextInt()) {
+			switch (getValidInt(input, 1, 7)) {
 			case 1:
 				System.out.println("Enter new name: ");
 				String name = "";
@@ -459,7 +466,9 @@ public class Menu {
 			if (profile.removeTransaction(transaction)) {
 				System.out.println("Success.");
 			}
-			System.out.println("Deletion failed.");
+			else {
+				System.out.println("Deletion failed.");
+			}
 		}
 		else {
 			System.out.println("Deletion cancelled.");
