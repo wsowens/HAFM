@@ -436,7 +436,7 @@ public class Menu {
 			case 3:
 				input.nextLine();
 				System.out.println("Enter new date: ");
-				newTransaction.date = Menu.getValid(input, Menu.dateFormat);
+				newTransaction.setDate(Menu.getValid(input, Menu.dateFormat));
 				break;
 			case 4:
 				System.out.println("Enter new category: ");

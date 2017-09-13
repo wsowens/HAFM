@@ -135,22 +135,4 @@ public class Data {
 		}
 		return true;
 	}
-
-	//almost certainly useless at this point
-	static void wipe() {
-		Transaction[] temp = Transaction.transactionList.toArray(new Transaction[Transaction.transactionList.size()]);
-		for (Transaction transaction : temp) {
-			transaction.deleteTransaction();
-		}
-		Category[] temp1 = Category.categoryList.toArray(new Category[Category.categoryList.size()]);
-		for (Category category : temp1) {
-			category.deleteCategory();
-		}
-		Category.clearNull();
-		Account[] temp2 = Account.accountList.toArray(new Account[Account.accountList.size()]);
-		for (Account account : temp2) {
-			account.deleteAccount();
-		}
-		Account.clearNull();
-	}
 }
